@@ -6,14 +6,17 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true}));
 
 app.listen(port, () => {
-    console.log('Lắng nghe trên cổng 3000');
+    console.log('Lắng nghe trên cổng http://localhost:3000');
 });
 
-
-const uri = 'mongodb+srv://admin4:WPIWJY3q2GrErDD7@cluster0.0wmav.mongodb.net/lab2';
+const COMMON = require('./COMMON');
+const uri = COMMON.uri;
 
 const mongoose = require('mongoose');
 const carModel = require('./carModel');
+const apiMobile = require('./api');
+app.use('/api', apiMobile);
+
 
 app.get('/', async (req, res) => {
     await mongoose.connect(uri);
@@ -44,10 +47,10 @@ app.post('/add_xe', async (req, res) => {
     res.send(cars);
 })
 
-app.delete('/delete/:id', async (req, res) => {
+app.delete('/delete', async (req, res) => {
     await mongoose.connect(uri);
 
-    let id = req.params.id;
+    let id = req.body;
     // Xử lý lỗi khi id không đúng
     await carModel.deleteOne({
         _id:id
@@ -57,14 +60,15 @@ app.delete('/delete/:id', async (req, res) => {
     res.send(cars);
 })
 
-app.put('/update/:id', async (req, res) => {
+app.put('/update', async (req, res) => {
     await mongoose.connect(uri);
 
-    let id = req.params.id;
+    let id = req.body;
     let car = await carModel.findById(id); // tìm thông tin theo id
     let tenmoi = car.ten + " 2024";
 
     await carModel.updateOne({_id: id}, {ten: tenmoi});
+    
     let xehoi = await carModel.find({});
     res.send(xehoi);
 
